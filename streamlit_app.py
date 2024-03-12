@@ -1,7 +1,16 @@
 from ultralytics import YOLO
+from ultralytics.utils.plotting import Annotator
 import streamlit as st
 import altair as alt
 import cv2
+
+# Load the YOLOv9 model
+print("[INFO] loading YOLOv9 model...")
+model = YOLO('yolov9c.pt')
+
+# initialize the video stream
+print("[INFO] starting video stream...")
+cap = cv2.VideoCapture(0)
 
 st.set_page_config(
     page_title="YoloV9 Object Detection Dashboard",
@@ -10,6 +19,24 @@ st.set_page_config(
     initial_sidebar_state="expanded")
 
 alt.themes.enable("dark")
+
+def plot_boxes(frame):
+    results = model.predict(frame)
+
+    for r in results:
+        
+        annotator = Annotator(frame)
+        
+        boxes = r.boxes
+        for box in boxes:
+            
+            b = box.xyxy[0]  # get box coordinates in (left, top, right, bottom) format
+            c = box.cls
+            annotator.box_label(b, model.names[int(c)])
+
+    frame = annotator.result()
+
+    return frame
 
 with st.sidebar:
     st.title('🎥 YoloV9 Object Detection Dashboard')
@@ -31,13 +58,14 @@ with col[0]:
         st.text('Run from Local Video 👇')
         on = st.toggle('Start video')
         FRAME_WINDOW = st.image([])
-        camera = cv2.VideoCapture(0)
 
         while on:
-                _, frame = camera.read()
+                _, frame = cap.read()
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                plot_boxes(frame)
                 FRAME_WINDOW.image(frame)
         else:
+                cap.release()
                 st.write('Video stopped')
 
 # wnd Column
