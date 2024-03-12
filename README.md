@@ -1,4 +1,4 @@
-# Object Detection using YoloV9 and Streamlt Python
+# Object Detection using YoloV9 and Streamlit Python
 
 ## Folder contents
 
@@ -8,5 +8,6 @@ Below is short explanation of remaining files in the project folder.
 
 ```
 ├── app.py
-└── README.md                  This is the file you are currently reading
+├── streamlit_app.py            This is the file object detection using YoloV9 and Streamlit
+└── README.md                   This is the file you are currently reading
 ```
