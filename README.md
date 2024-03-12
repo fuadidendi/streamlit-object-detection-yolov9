@@ -2,7 +2,7 @@
 
 ## Folder contents
 
-The project **streamlit-object-detection-with-yolov9** contains one source main file [app.py](app.py). 
+The project **streamlit-object-detection-with-yolov9** contains one source main file [streamlit_app.py](streamlit_app.py). 
 
 Below is short explanation of remaining files in the project folder.
 
