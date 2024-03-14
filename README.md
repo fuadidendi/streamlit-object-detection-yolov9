@@ -4,6 +4,8 @@
 
 The project **streamlit-object-detection-with-yolov9** contains one source main file [streamlit_app.py](streamlit_app.py). 
 
+I used **yolov9c.pt** model. You can download the model [here](https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov9c.pt), or you can see more from [Ultralytics YOLOV9](https://docs.ultralytics.com/models/yolov9/#performance-on-ms-coco-dataset).
+
 Below is short explanation of remaining files in the project folder.
 
 ```
