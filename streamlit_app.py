@@ -2,7 +2,11 @@ from ultralytics import YOLO
 from ultralytics.utils.plotting import Annotator
 import streamlit as st
 import altair as alt
+from vidgear.gears import CamGear
 import cv2
+
+# set desired quality as 720p
+options = {"STREAM_RESOLUTION": "720p"}
 
 # Load the YOLOv9 model
 print("[INFO] loading YOLOv9 model...")
@@ -52,8 +56,19 @@ with col[0]:
     st.markdown('#### Video demo')
     if(selected_video_source == 'Youtube'):
         youtube_link = st.text_input('Enter your Youtube video link here 👇', 'https://www.youtube.com/')
-        VIDEO_URL = youtube_link
-        st.video(VIDEO_URL)
+        FRAME_WINDOW = st.image([])
+        stream = CamGear(
+            source=youtube_link,
+            stream_mode=True,
+            logging=True,
+            **options
+        ).start()
+
+        while True:
+             frame = stream.read()
+             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) 
+             plot_boxes(frame)
+             FRAME_WINDOW.image(frame)
     else:
         st.text('Run from Local Video 👇')
         on = st.toggle('Start video')
