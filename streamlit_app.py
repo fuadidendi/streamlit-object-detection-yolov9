@@ -1,92 +1,72 @@
 from ultralytics import YOLO
 from ultralytics.utils.plotting import Annotator
 import streamlit as st
-import altair as alt
-from vidgear.gears import CamGear
 import cv2
+from vidgear.gears import CamGear
 
-# set desired quality as 720p
-options = {"STREAM_RESOLUTION": "720p"}
-
-# Load the YOLOv9 model
-print("[INFO] loading YOLOv9 model...")
-model = YOLO('yolov9c.pt')
-
-# initialize the video stream
-print("[INFO] starting video stream...")
-cap = cv2.VideoCapture(0)
-
-st.set_page_config(
-    page_title="YoloV9 Object Detection Dashboard",
-    page_icon="🎥",
-    layout="wide",
-    initial_sidebar_state="expanded")
-
-alt.themes.enable("dark")
-
-def plot_boxes(frame):
+# Function to plot bounding boxes on frames
+def plot_boxes(frame, model):
     results = model.predict(frame)
-
+    annotator = Annotator(frame)
     for r in results:
-        
-        annotator = Annotator(frame)
-        
         boxes = r.boxes
         for box in boxes:
-            
-            b = box.xyxy[0]  # get box coordinates in (left, top, right, bottom) format
-            c = box.cls
+            b = box.xyxy[0]  # Box coordinates
+            c = box.cls      # Class ID
             annotator.box_label(b, model.names[int(c)])
+    return annotator.result()
 
-    frame = annotator.result()
+# Function to process and display video
+def process_video(source, model, options=None):
+    if source == 'Local':
+        cap = cv2.VideoCapture(0)  # Local webcam
+    else:  # YouTube source
+        cap = CamGear(source=source, stream_mode=True, logging=True, **options).start()
 
-    return frame
+    FRAME_WINDOW = st.empty()
 
+    while True:
+        if source == 'Local':
+            ret, frame = cap.read()
+            if not ret:
+                break
+        else:  # YouTube source
+            frame = cap.read()
+            if frame is None:
+                break
+        
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = plot_boxes(frame, model)
+        FRAME_WINDOW.image(frame)
+
+    if source == 'Local':
+        cap.release()
+
+# Load the YOLOv9 model
+model = YOLO('yolov9c.pt')
+
+# Streamlit UI setup
+st.set_page_config(page_title="YoloV9 Object Detection Dashboard", page_icon="🎥", layout="wide", initial_sidebar_state="expanded")
+
+st.title('🎥 YoloV9 Object Detection Dashboard')
+
+# Sidebar
 with st.sidebar:
-    st.title('🎥 YoloV9 Object Detection Dashboard')
-    
-    video_source_list = ['Local', 'Youtube']
-    selected_video_source = st.selectbox('Select video source', video_source_list)
+    video_source = st.radio('Select video source', ['Local', 'YouTube'])
+    youtube_link = ""
+    if video_source == 'YouTube':
+        youtube_link = st.text_input('YouTube video link', '')
 
-# App Layout
-col = st.columns((4.5, 2), gap='medium')
+# Set desired quality
+options = {"STREAM_RESOLUTION": "720p"}
 
-# 1st Column
-with col[0]:
-    st.markdown('#### Video demo')
-    if(selected_video_source == 'Youtube'):
-        youtube_link = st.text_input('Enter your Youtube video link here 👇', 'https://www.youtube.com/')
-        FRAME_WINDOW = st.image([])
-        stream = CamGear(
-            source=youtube_link,
-            stream_mode=True,
-            logging=True,
-            **options
-        ).start()
+# Process video
+if st.button('Start'):
+    if video_source == 'YouTube' and youtube_link:
+        process_video(youtube_link, model, options)
+    elif video_source == 'Local':
+        process_video('Local', model)
 
-        while True:
-             frame = stream.read()
-             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) 
-             plot_boxes(frame)
-             FRAME_WINDOW.image(frame)
-    else:
-        st.text('Run from Local Video 👇')
-        on = st.toggle('Start video')
-        FRAME_WINDOW = st.image([])
-
-        while on:
-                _, frame = cap.read()
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                plot_boxes(frame)
-                FRAME_WINDOW.image(frame)
-        else:
-                cap.release()
-                st.write('Video stopped')
-
-# wnd Column
-with col[1]:
-    st.markdown('#### Description')
-    if selected_video_source=='Youtube':
-        st.text('Youtube selected')
-    else:
-        st.text('Local selected')
+# Note on closing resources
+st.sidebar.markdown("### Note")
+st.sidebar.markdown("Close the browser tab or stop the app to release webcam resources properly when using Local video source.")
