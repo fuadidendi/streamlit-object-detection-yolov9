@@ -25,14 +25,12 @@ streamlit run streamlit_app.py
 ```
 
 ## Preview
+### Local Video Source
+Local video selected as video source. Make sure there is a camera connected to your device.
+Just toggle on the Start Video and the real-time object detection from your camera will be begin.
+
 ### Youtube Video Source
 Youtube video is selected as the video source, you must enter the YouTube video link.
 Here below preview when you use youtube video as video source. I used No Copyright Video [Tokyo Walk - Pedestrian | Free Footage Stock Video](https://www.youtube.com/watch?v=OUlP6JLVKYo)
 
 ![Alt text](snip-youtube-object-detection-yolov9-streamlit.gif?raw=true "Youtube Video Source")
-
-### Local Video Source
-Local video selected as video source. Make sure there is a camera connected to your device.
-Just toggle on the Start Video and the real-time object detection from your camera will be begin.
-
-![Alt text](local_video.png?raw=true "Local Video Source")
